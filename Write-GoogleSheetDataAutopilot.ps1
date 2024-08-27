@@ -76,6 +76,7 @@ function Get-NewAccessToken {
     $accessToken = $response.access_token
     Set-Content -Path $accessTokenFile -Value $accessToken
     Write-Output "Access token refreshed and saved to $accessTokenFile."
+    Write-Output "Please share your Google Sheet with the Service Account Email $($json.client_email)"
 }
 
 # Main script execution
@@ -255,6 +256,8 @@ catch {
         $errorResponseObj.error.details | Format-List -Property reason,metadata
         if ($errorResponseObj.error.details.reason -eq "ACCESS_TOKEN_EXPIRED") {
             Write-Warning "Access token is expired. Please re-run the script with the -RefreshToken flag."
+        } elseif ($errorResponseObj.error.status -eq "PERMISSION_DENIED") {
+            Write-Warning "Write access to specified Google Sheet denied. Please make sure the Service Account Email has Edit access to the Google Sheet."
         }
     } else {
         $errorResponseObj.error | Format-List -Property *
